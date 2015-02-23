@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"strings"
 )
 
 func getText(url string) (net.IP, error) {
@@ -26,7 +27,7 @@ func parseText(src io.Reader) (net.IP, error) {
 }
 
 func parseIP(s string) (net.IP, error) {
-	if ip := net.ParseIP(s); ip != nil {
+	if ip := net.ParseIP(strings.TrimSpace(s)); ip != nil {
 		return ip, nil
 	}
 

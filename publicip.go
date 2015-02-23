@@ -19,10 +19,6 @@ var (
 		time.Time
 		sync.Mutex
 	}
-
-	sources = map[string]func() (net.IP, error){
-		"jsonip.org": providers.JSONIP,
-	}
 )
 
 // IP returns the public IP address.
@@ -38,7 +34,7 @@ func IP() (net.IP, error) {
 	}
 
 	errs := []string{}
-	for provider, fn := range sources {
+	for provider, fn := range providers.All {
 		res, err := fn()
 		if err != nil {
 			cache.IP = res
