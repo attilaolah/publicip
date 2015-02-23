@@ -3,7 +3,6 @@ package publicip
 import (
 	"errors"
 	"net"
-	"strings"
 	"sync"
 	"time"
 
@@ -33,17 +32,14 @@ func IP() (net.IP, error) {
 		return cache.IP, nil
 	}
 
-	errs := []string{}
-	for provider, fn := range providers.All {
-		res, err := fn()
-		if err == nil {
-			cache.IP = res
-			cache.Time = time.Now()
-			return res, nil
-		}
-		errs = append(errs, provider+": "+err.Error())
+	ip, err := fastIP()
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New(strings.Join(errs, "; "))
+
+	cache.IP = ip
+	cache.Time = time.Now()
+	return ip, nil
 }
 
 // Refresh returns the public IP, regardless of the state of the cache.
@@ -53,4 +49,39 @@ func Refresh() (net.IP, error) {
 	cache.Unlock()
 
 	return IP()
+}
+
+// fastIP fires up a goroutine for each provider, returning an IP as soon as one is found.
+func fastIP() (net.IP, error) {
+	ips := make(chan net.IP, 1)
+	errs := make(chan error)
+	wg := sync.WaitGroup{}
+
+	wg.Add(len(providers.All))
+	for provider, fn := range providers.All {
+		go func(provider string, fn func() (net.IP, error)) {
+			if ip, err := fn(); err == nil {
+				ips <- ip
+			} else {
+				errs <- err
+			}
+			wg.Done()
+		}(provider, fn)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ips)
+		close(errs)
+	}()
+
+	for ip := range ips {
+		return ip, nil
+	}
+
+	for err := range errs {
+		return nil, err
+	}
+
+	return nil, errors.New("no providers")
 }
