@@ -29,14 +29,14 @@ func IP() (net.IP, error) {
 	cache.Lock()
 	defer cache.Unlock()
 
-	if time.Since(cache.Time) > Timeout {
+	if time.Since(cache.Time) < Timeout {
 		return cache.IP, nil
 	}
 
 	errs := []string{}
 	for provider, fn := range providers.All {
 		res, err := fn()
-		if err != nil {
+		if err == nil {
 			cache.IP = res
 			cache.Time = time.Now()
 			return res, nil
