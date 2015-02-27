@@ -10,7 +10,7 @@ import (
 func main() {
 	ip, err := publicip.IP()
 	if err != nil {
-		fmt.Println("publicip: %v", err)
+		fmt.Errorf("publicip: %v", err)
 		os.Exit(1)
 	}
 
