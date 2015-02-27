@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -9,9 +8,6 @@ import (
 )
 
 func main() {
-	n := flag.Bool("n", false, "no newline")
-	flag.Parse()
-
 	ip, err := publicip.IP()
 	if err != nil {
 		fmt.Println("publicip: %v", err)
@@ -22,9 +18,5 @@ func main() {
 		panic("ip was nil")
 	}
 
-	if *n {
-		fmt.Print(ip)
-	} else {
-		fmt.Println(ip)
-	}
+	fmt.Print(ip)
 }
