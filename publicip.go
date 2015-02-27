@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/attilaolah/publicip/providers"
+	"github.com/attilaolah/publicip/internal/providers"
 )
 
 var (
